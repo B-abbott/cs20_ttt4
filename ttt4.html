@@ -1,0 +1,220 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Tic Tac Toe</title>
+        <script src="https://code.jquery.com/jquery-3.7.0.min.js" 
+                integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" 
+                crossorigin="anonymous"></script>
+        <style >
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 100vw;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-color: rgb(26, 209, 223);
+        }
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            width: 600px;
+            margin: 20px auto;
+            margin-top: 120px;
+        }
+        #overlayButton {
+        position: absolute; 
+        width: 650px; 
+        height: 650px; 
+        top: 32.5%; 
+        left: 50.5%;
+        transform: translateX(-50%); 
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+        color: white;
+        font-size: 24px;
+        border: none;
+        cursor: pointer;
+        display: none;
+        }
+        #board div {
+            width: 200px;
+            height: 200px;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 125px;
+            font-weight: bold;
+            border: 2px solid black;
+            color: red;
+            cursor: pointer;
+        }
+        #board div:hover {
+            background-color: black;
+        }
+        #turn {
+            padding: 20px;
+            border: 2px solid black;
+            background-color: gray;
+            color: white;
+            font-size: 50px;
+            position: absolute;
+            left: 34.5%;
+            text-align: center;      
+            width: 610px;
+        }
+        #WC {
+            padding: 20px;
+            border: 2px solid black;
+            background-color: gray;
+            color: white;
+            font-size: 25px;
+            position: absolute;
+            left: 34.5%;
+            text-align: center;      
+            width: 610px;  
+        }
+        #start {
+            position: absolute;
+            padding: 5px 10px;
+            margin-left: 5px;
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 50px;
+        }
+        #start:hover {
+            background-color: gray;
+        }
+        header {
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-bottom: 2px solid #ccc;
+            font-size: 75px;
+        }
+        
+        </style>
+    </head>
+    <body>
+        <script>
+            function checkWin() {
+                let moves = new Array(9).fill('-');
+                moves.forEach(function(move,index) {
+                    if($('#sq' + index).text() == "") {
+                        moves[index] = move;
+                    } else {
+                        moves[index] = $('#sq' + index).text();
+                    }
+                });
+                let winConditions = new Array(8);
+                for(i = 0; i < 9; i+=3) {
+                    let code = "";
+                    for(j = 0; j < 3; j++) {
+                        code += moves[i+j];
+                    }
+                    winConditions[i/3] = code;
+                }
+                for(i = 0; i < 3; i++) {
+                    let code = "";
+                    for(j = 0; j < 9; j+=3) {
+                        code += moves[i+j];
+                    }
+                    winConditions[i + 3] = code;
+                }
+                winConditions[6] = moves[0] + moves[4] + moves[8];
+                winConditions[7] = moves[2] + moves[4] + moves[6];
+                let winner = false;
+                winConditions.forEach(function(condition) {
+                    if(condition == "XXX" || condition == "OOO") {
+                        $('#overlayButton').html(condition.slice(-1) + " has won!<br>Please click to restart!");
+                        $('#overlayButton').fadeIn();
+                        winner = true;
+                    }
+                });
+                if(!winner) {
+                    let dashes = 0;
+                    moves.forEach(function(move) {
+                        if(move == '-') {
+                            dashes++;
+                        }
+                    });
+                    if(dashes == 0) {
+                        $('#overlayButton').html("Stalemate:(<br>Please click to restart!");
+                        $('#overlayButton').fadeIn();
+                    }
+                }
+            }
+            function ranTurn() {
+                var bool = Math.floor(Math.random() * 2); // Randomly selects between 0 and 1
+                if (bool) {
+                    $("#turn").html("It's O's turn");
+                } else {
+                    $("#turn").html("It's X's turn");
+                }
+            }
+        
+            // Function to start the game
+            function start() {
+                $('#overlayButton').hide()
+                for (i = 0; i < 9; i++) {
+                    $('#sq' + i).html(""); // Clear each square
+                    $('#sq' + i).prop('disabled', false); // Enable each square
+                    $('#sq' + i).on('click', makeMove); // Attach click event to each square
+                }
+                ranTurn(); // Assign the first random turn
+            }
+        
+            // Function to handle making a move
+            function makeMove() {
+            var elementID = $(this).attr("id");
+            var x = $("#turn").text(); // Get the current turn
+
+            // Determine the move based on the current turn
+            if (x == "It's X's turn") {
+                $('#' + elementID).html("X");
+                alert("You just placed an X at square " + elementID.slice(-1)); // Alert with square number
+            } else {
+                $('#' + elementID).html("O");
+                alert("You just placed an O at square " + elementID.slice(-1)); // Alert with square number
+            }
+
+            // Disable the square after the move
+            $("#" + elementID).prop('disabled', true).off('click'); // Disable the square and remove the click event
+
+            // Switch the turn after placing the move
+            var message = (x == "It's X's turn") ? "It's O's turn" : "It's X's turn";
+            $("#turn").html(message); // Update turn display
+
+            checkWin();
+
+            }
+        
+            // Document ready
+            $(document).ready(function () {
+                $('#start').click(start); // Start the game when the "Start" button is clicked
+            });
+            $(document).ready(function () {
+                $('#overlayButton').click(start); // reset the game when overlay is clicked
+            });
+        </script>
+        <header>
+            <div id="start">Start Game</div>
+            <h1>Tic Tac Toe</h1>
+        </header>
+        <div id="turn"></div>
+        <div id="board">
+            <script>
+                const NUM_SQUARES = 9;
+                for (i=0; i<NUM_SQUARES; i++)
+                {
+                id = "sq"+i;
+                document.write( "<div class='square' id='" + id + "'></div>" );
+                }
+            </script>
+        </div>
+        <button id="overlayButton">Restart Game</button>
+        <div id="WC">Win condition: X-X-X</div>
+    </body>
+</html>
